@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context 
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/tx 
+                           http://www.springframework.org/schema/tx/spring-tx.xsd
+                           http://www.springframework.org/schema/util 
+                           http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/mvc 
+                           http://www.springframework.org/schema/mvc/spring-mvc.xsd
+                           http://www.springframework.org/schema/security 
+                           http://www.springframework.org/schema/security/spring-security.xsd">
+
+  <!-- scan class in package with @Component annotation to instantiate bean -->
+  <context:component-scan base-package="com.foyatech.iot.web,com.foyatech.iot.service" />
+  <!-- enable Spring MVC annotation -->
+  <mvc:annotation-driven />
+  <!-- enable annotation config -->
+  <context:annotation-config />
+  
+  <!-- Spring Security REST JWT auth-->
+  <security:http pattern="/api/test/**" 
+                 entry-point-ref="restAuthenticationEntryPoint"
+                 authentication-manager-ref="jwtAuthenticationManager" 
+                 create-session="stateless">
+    <security:intercept-url pattern="/api/test/upload" access="hasRole('ROLE_ADMIN')"/>
+    <security:csrf disabled="true"/>
+    <security:custom-filter before="FORM_LOGIN_FILTER" ref="jwtAuthenticationFilter"/>
+  </security:http>
+
+
+  <bean id="jwtAuthenticationFilter" class="com.foyatech.iot.security.JwtAuthenticationFilter">
+    <constructor-arg type="java.lang.String">
+      <value>/api/test/**</value>
+    </constructor-arg>
+    <property name="authenticationManager" ref="jwtAuthenticationManager" />
+    <property name="authenticationSuccessHandler" ref="jwtAuthenticationSuccessHandler" />
+  </bean>
+  
+  <bean id="restAuthenticationEntryPoint" class="com.foyatech.iot.security.RestAuthenticationEntryPoint"/>
+  <bean id="jwtAuthenticationSuccessHandler" class="com.foyatech.iot.security.JwtAuthenticationSuccessHandler"/>
+  <bean id="jwtAuthenticationProvider" class="com.foyatech.iot.security.JwtAuthenticationProvider"/>
+  
+  <bean id="jwtAuthenticationManager" class="org.springframework.security.authentication.ProviderManager">
+    <constructor-arg>
+      <list>
+        <ref bean="jwtAuthenticationProvider"/>
+      </list>
+    </constructor-arg>
+  </bean>
+    
+  <!-- Spring Security login -->
+  <security:http authentication-manager-ref="myAuthenticationManager" create-session="stateless">
+    <security:csrf disabled="true"/>
+    <security:intercept-url pattern="/login.jsp" access="permitAll" />
+    <security:intercept-url pattern="/**" access="isAuthenticated()"/>
+    <security:form-login
+         login-page="/login.jsp"
+         login-processing-url="/doLogin"
+         authentication-failure-handler-ref="myAuthenticationFailureHandler"
+         authentication-success-handler-ref="myAuthenticationSuccessHandler"/>
+    <security:logout/>
+  </security:http>
+  <security:authentication-manager alias="myAuthenticationManager">
+    <security:authentication-provider user-service-ref="myUserDetailsService"/>
+  </security:authentication-manager>
+    
+  <bean id="myAuthenticationSuccessHandler" class="com.foyatech.iot.security.MyAuthenticationSuccessHandler"></bean>
+  <bean id="myAuthenticationFailureHandler" class="com.foyatech.iot.security.MyAuthenticationFailureHandler"></bean>
+  <bean id="myUserDetailsService" class="com.foyatech.iot.security.MyUserDetailsService"></bean>
+  
+</beans>
