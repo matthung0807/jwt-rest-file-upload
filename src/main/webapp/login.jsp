@@ -65,7 +65,7 @@
     </table>
   </form>
 </div>
-<div class='progress' id="progress_div">
+<div class='progress' id="progress-div">
   <div class='bar' id='bar'></div>
   <div class='percent' id='percent'>0%</div>
 </div>
@@ -141,7 +141,7 @@ $(function(){
 		        xhr.upload.addEventListener("progress", function(evt){
 		          if (evt.lengthComputable) {
 		            var percentComplete = evt.loaded / evt.total;
-		            var percentVal = percentComplete*100 + "%";
+		            var percentVal = Math.round(percentComplete*100) + "%";
 		            $("#percent").text(percentVal);
 		            $("#bar").width(percentVal);
 		          }
