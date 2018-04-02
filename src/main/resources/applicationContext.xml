@@ -32,6 +32,7 @@
                  authentication-manager-ref="jwtAuthenticationManager" 
                  create-session="stateless">
     <security:intercept-url pattern="/api/test/upload" access="hasRole('ROLE_ADMIN')"/>
+    <security:intercept-url pattern="/api/test/json" access="hasRole('ROLE_ADMIN')"/>
     <security:csrf disabled="true"/>
     <security:custom-filter before="FORM_LOGIN_FILTER" ref="jwtAuthenticationFilter"/>
   </security:http>

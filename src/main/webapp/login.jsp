@@ -54,7 +54,7 @@
   </form>
 </div>
 <div>
-  <form id="myForm">
+  <form id="myForm1">
     <table>
       <tr>
         <td><input type="file" name="file" id="file"/></td>
@@ -69,7 +69,14 @@
   <div class='bar' id='bar'></div>
   <div class='percent' id='percent'>0%</div>
 </div>
-<div></div>
+<hr>
+<div>
+  <button type="button" id="button-json">send json</button>
+</div>
+<hr>
+<div>
+  <button type="button" id="button-txt">send txt</button>
+</div>
 </body>
 <script>
 $(function(){
@@ -82,9 +89,7 @@ $(function(){
 	  $("input[name='password']").val("john");
   });
 	
-	
-	
-  $("#myForm").submit(function(e){
+  $("#myForm1").submit(function(e){
 	  e.preventDefault();
 	  document.cookie = 'jwt=;expires=Thu, 01 Jan 1970 00:00:01 GMT;'; // delete jwt cookie
 	  
@@ -103,7 +108,7 @@ $(function(){
 		  dataType: 'text',
 		  success: function (data){
 			  
-		    var formData = new FormData($("#myForm")[0]);
+		    var formData = new FormData($("#myForm1")[0]);
 			$.ajax({
 			  type: "POST",
 			  url: "api/test/upload",
@@ -163,14 +168,108 @@ $(function(){
 	        }
 	          
 	      },
-	      
-		  
-		  
-		  
 		});
 	  
+  });// end of form1 submit
+  
+  //send json
+  $('#button-json').click(function(){
+	$.ajax({
+	  type: "POST",
+	  url: "doLogin",
+	  data:$("#loginForm").serialize(),
+	  dataType: 'text',
+	  success: function (data){
+		var obj = [{"name":"matt"},{"name":"john"}];
+		var jsonString = JSON.stringify(obj);
+		$.ajax({
+		  type: "POST",
+		  url: "api/test/json",
+		  data:jsonString,
+		  contentType:"application/json",
+		  dataType:'text',
+		  beforeSend: function (xhr) {
+			  xhr.setRequestHeader("Authorization", "Bearer " + getCookie("jwt"));
+		  },
+		  success: function (data){
+		    $("#result").text(data);
+		  },
+		  error: function(jqXHR, textStatus, errorThrown){
+	        switch(jqXHR.status){
+	          case 401:{
+	        	$("#result").text("帳號或密碼錯誤");
+	            break;
+	          }
+	          case 403:{
+  		        $("#result").text("無此權限");
+  		        break;
+	          }
+	        }
+	      }
+		}).fail(function(){
+			$("#result").text("無此權限");
+		});
+	    
+	  },
+	  error: function(jqXHR, textStatus, errorThrown){
+        switch(jqXHR.status){
+          case 401:$("#result").text("帳號或密碼錯誤");break;
+          case 403:$("#result").text("無此權限");break;
+        }
+          
+      },
+	});
   });
 	
+  //send txt
+  $('#button-txt').click(function(){
+	$.ajax({
+	  type: "POST",
+	  url: "doLogin",
+	  data:$("#loginForm").serialize(),
+	  dataType: 'text',
+	  success: function (data){
+		var txt = "001,matt,123\n"
+		        + "002,john,456\n"
+		$.ajax({
+		  type: "POST",
+		  url: "api/test/txt",
+		  data:txt,
+		  contentType:"text/plain",
+		  dataType:'text',
+		  beforeSend: function (xhr) {
+			  xhr.setRequestHeader("Authorization", "Bearer " + getCookie("jwt"));
+		  },
+		  success: function (data){
+		    $("#result").text(data);
+		  },
+		  error: function(jqXHR, textStatus, errorThrown){
+	        switch(jqXHR.status){
+	          case 401:{
+	        	$("#result").text("帳號或密碼錯誤");
+	            break;
+	          }
+	          case 403:{
+  		        $("#result").text("無此權限");
+  		        break;
+	          }
+	        }
+	      }
+		}).fail(function(){
+			$("#result").text("無此權限");
+		});
+	    
+	  },
+	  error: function(jqXHR, textStatus, errorThrown){
+        switch(jqXHR.status){
+          case 401:$("#result").text("帳號或密碼錯誤");break;
+          case 403:$("#result").text("無此權限");break;
+        }
+          
+      },
+	});
+  });
+  
 });
 
 function getCookie(cookieName) {
